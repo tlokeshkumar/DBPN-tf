@@ -76,6 +76,20 @@ def _crop_random_classification(image, label, target_size):
     
     return image, label
 
+def _crop_random_single(image, s, patch):
+    """Randomly crops image and mask in accord."""
+    seed = random.random()
+    img_rows, img_cols = (patch*s, patch*s)
+    # cond_crop_image = tf.cast(tf.random_uniform(
+    #     [], maxval=2, dtype=tf.int32, seed=seed), tf.bool)
+    
+    # image = tf.cond(cond_crop_image, lambda: tf.random_crop(
+    #     image, [int(img_rows), int(img_cols), 3], seed=seed), lambda: tf.identity(image))
+    image = tf.random_crop(image, [int(img_rows), int(img_cols), 3], seed=seed)
+    label = tf.image.resize_images(image, [img_rows//s, img_cols//s])
+        
+    return image, label
+
 
 def _flip_left_right_segmentation(image, mask):
     """Randomly flips image and mask left or right in accord."""
@@ -280,7 +294,7 @@ def flow_from_directory(directory, target_size=(256, 256), batch_size=32, shuffl
 
     return next_element, init_op
 
-def _parse_single_image(image_paths, s):
+def _parse_single_image(image_paths):
     """Reads image and s is the scale factor"""
     image_content = tf.read_file(image_paths)
     
@@ -288,29 +302,33 @@ def _parse_single_image(image_paths, s):
     
     # Define some transformation for the label (if you are using unsupervised learning)
     # Since the task is super-resolution, we need to downscale the images.
-    print (images.get_shape())
-    init_w = tf.shape(images)[0]
-    init_h = tf.shape(images)[1]
+    # print (images.get_shape())
+    # init_w = tf.shape(images)[0]
+    # init_h = tf.shape(images)[1]
     
-    new_w = tf.to_int32(tf.to_float(init_w) / s)
-    new_h = tf.to_int32(tf.to_float(init_h) / s)
+    # new_w = tf.to_int32(tf.to_float(init_w) / s)
+    # new_h = tf.to_int32(tf.to_float(init_h) / s)
 
-    mask = tf.image.resize_images(images, (new_w, new_h))
+    # mask = tf.image.resize_images(images, (new_w, new_h))
 
-    return images, mask
+    return images
 
-def read_no_labels(directory, s = 2, batch_size=1, shuffle_data=True, 
+def read_no_labels(directory, s = 2, patch=32,  batch_size=1, shuffle_data=True, 
                 seed=None,  num_parallel_calls=2, 
                 prefetch=64):
-    
+    '''
+    patch: The low res input of the image (shape default: 32x32)
+    '''
     dataset = glob(os.path.join(directory, "*"))
     
     image_data = tf.constant(dataset)
     data = tf.data.Dataset.from_tensor_slices(image_data)
     
-    data = data.map(lambda x: _parse_single_image(x, s), num_parallel_calls=num_parallel_calls).prefetch(prefetch)
+    data = data.map(lambda x: _parse_single_image(x), num_parallel_calls=num_parallel_calls).prefetch(prefetch)
     
     # Dont perform data augmentation
+    data = data.map(
+        lambda x: _crop_random_single(x, s, patch), num_parallel_calls=num_parallel_calls).prefetch(30)
     '''
     if augment:
         data = data.map(_corrupt_brightness,
@@ -322,8 +340,6 @@ def read_no_labels(directory, s = 2, batch_size=1, shuffle_data=True,
         data = data.map(_corrupt_saturation,
                         num_parallel_calls=num_parallel_calls).prefetch(30)
 
-        data = data.map(
-            lambda x, y: _crop_random_classification(x, y, target_size), num_parallel_calls=num_parallel_calls).prefetch(30)
 
         data = data.map(_flip_left_right_classification,
                         num_parallel_calls=num_parallel_calls).prefetch(30)
@@ -360,20 +376,21 @@ def read_no_labels(directory, s = 2, batch_size=1, shuffle_data=True,
 
 if __name__ == '__main__':
     dire = '/home/tlokeshkumar/Downloads/GTOS_256/h_sample002_01'
-    n, ini = read_no_labels(dire)
-
+    n, ini = read_no_labels(dire, s=8, patch=16)
     print ("passed the functions successfully!")
+
 
     init = tf.global_variables_initializer()
     
     sess = tf.Session()
     sess.run(init)
     sess.run(ini)
+    print ("passed the functions successfully!")
 
     for i in range(5):
         a, b = sess.run(n)
-        print (b)
-        print (a.shape)
+        # print (b)
+        print (np.squeeze(a, axis=0).shape)
         print (np.squeeze(b, axis=0).shape)
         cv2.imshow("image", np.squeeze(a, axis=0))
         cv2.imshow("downsampled", np.squeeze(b.astype('uint8'), axis=0))

@@ -18,7 +18,7 @@ from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K_B
 
 
-def up_projection(lt_, nf, s, block):
+def up_projection(lt_, nf, s):
 
     if s == 2:
         ht = Conv2DTranspose(nf, 2, strides=2)(lt_)
@@ -95,8 +95,21 @@ def down_projection(ht_, nf, s, act='prelu'):
         return lt1
 
 
-def super_resolution(input_tensor, n_feature_layers=2, n_projection=8, feature_filters=[128, 32], projection_filters=32, k_size=[3, 1], s=4):
+def super_resolution(input_tensor, n_feature_layers=2, n_projection=8, 
+            feature_filters=[128, 32], projection_filters=32, k_size=[3, 1], s=4):
+    '''
+    input_tensor: The input tensor required to complete the model
+    n_features_layer: The number of initial feature extraction layers that needs to be 
+                    fixed before starting the up and down projection blocks
+    n_projection: Number of Up and down projection blocks
+    feature_filters: Number of filters in each feature extraction layer
+    k_size: The kernel size to be used in feature extraction layer
+    s: The scaling factor of the super resolution network
 
+    Returns
+    -------
+    A Model object of the super resolution network  
+    '''
     x = Conv2D(feature_filters[0], k_size[0], padding="SAME")(input_tensor)
     if (len(k_size) != len(feature_filters)):
         raise ValueError(
@@ -107,10 +120,10 @@ def super_resolution(input_tensor, n_feature_layers=2, n_projection=8, feature_f
         x = up_projection(x, projection_filters, s)
         x = down_projection(x, projection_filters, s)
     x = up_projection(x, projection_filters, s)
-    return Model(inputs=input_tensor, outputs=x)
+    return Model(inputs=input_tensor, outputs=x) 
 
 
 if __name__ == '__main__':
-    x = Input(shape=(104, 104, 32))
+    x = Input(shape=(256, 256, 3))
     sample = super_resolution(x)
-    print(sample.summary())
+    print (sample.summary())
