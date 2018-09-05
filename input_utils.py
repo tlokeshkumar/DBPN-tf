@@ -87,7 +87,8 @@ def _crop_random_single(image, s, patch):
     #     image, [int(img_rows), int(img_cols), 3], seed=seed), lambda: tf.identity(image))
     image = tf.random_crop(image, [int(img_rows), int(img_cols), 3], seed=seed)
     label = tf.image.resize_images(image, [img_rows//s, img_cols//s])
-        
+    image = tf.to_float(image)
+    label = tf.to_float(label)
     return image, label
 
 
@@ -388,7 +389,7 @@ if __name__ == '__main__':
     print ("passed the functions successfully!")
 
     for i in range(5):
-        a, b = sess.run(n)
+        a = sess.run(n[1])
         # print (b)
         print (np.squeeze(a, axis=0).shape)
         print (np.squeeze(b, axis=0).shape)

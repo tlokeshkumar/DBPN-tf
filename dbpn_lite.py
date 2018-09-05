@@ -17,6 +17,20 @@ from tensorflow.python.keras import applications
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K_B
 
+def variable_summaries(var):
+    """
+    Attach a lot of summaries to a Tensor (for TensorBoard visualization).
+    """
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(var))
+        tf.summary.scalar('min', tf.reduce_min(var))
+        tf.summary.histogram('histogram', var)
+
 
 def up_projection(lt_, nf, s):
 
@@ -95,8 +109,8 @@ def down_projection(ht_, nf, s, act='prelu'):
         return lt1
 
 
-def super_resolution(input_tensor, n_feature_layers=2, n_projection=8, 
-            feature_filters=[128, 32], projection_filters=32, k_size=[3, 1], s=4):
+def super_resolution(input_tensor, n_feature_layers=2, n_projection=1,
+            feature_filters=[128, 32], projection_filters=32, k_size=[3, 1], s=2):
     '''
     input_tensor: The input tensor required to complete the model
     n_features_layer: The number of initial feature extraction layers that needs to be 
@@ -122,6 +136,17 @@ def super_resolution(input_tensor, n_feature_layers=2, n_projection=8,
     x = up_projection(x, projection_filters, s)
     return Model(inputs=input_tensor, outputs=x) 
 
+def loss_funcs(b,labels):
+    out = b.output
+    mse = tf.losses.mean_squared_error(out,labels)
+    
+    with tf.name_scope('loss'):
+        variable_summaries(mse)
+    
+    with tf.name_scope('Predictions'):
+        variable_summaries(out)
+    
+    return mse
 
 if __name__ == '__main__':
     x = Input(shape=(256, 256, 3))
