@@ -21,6 +21,7 @@ from dbpn_lite import super_resolution, loss_funcs
 import argparse
 import numpy as np
 import coloredlogs
+import os
 
 
 parser = argparse.ArgumentParser(description="Inputs to the code")
@@ -42,25 +43,28 @@ runopts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
 coloredlogs.install(level='DEBUG')
 tf.logging.set_verbosity(tf.logging.DEBUG)
 
+init = tf.global_variables_initializer()
+
 n, ini = read_no_labels(args.train_dir, s=8, patch=16, batch_size=args.batch_size)
 
+sample = super_resolution(n[1], s=8)
 
-sample = super_resolution(n[0])
-
-loss = loss_funcs(sample, n[1])
+loss = loss_funcs(sample, n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
 
-tf.summary.image('High-Res-True', n[1])
+tf.summary.image('High-Res-True', n[0])
 tf.summary.image('High-Res-Pred', sample.output)
-tf.summary.image('Low-Res', n[0])
+tf.summary.image('Low-Res', n[1])
 
 optimizer = tf.train.AdamOptimizer()
-opA = optimizer.minimize(loss_A,global_step=global_step_tensor)
+opA = optimizer.minimize(loss,global_step=global_step_tensor)
 
 with K_B.get_session() as sess:
         
     sess.run(init)
+    # initialize iterations variables
+    sess.run(ini)
     summary_writer = tf.summary.FileWriter(args.log_directory, sess.graph)    
     summary = tf.summary.merge_all()
     
@@ -70,7 +74,7 @@ with K_B.get_session() as sess:
 
     if args.load_ckpt is not None:
 
-        if exists(args.load_ckpt):
+        if os.path.exists(args.load_ckpt):
             if tf.train.latest_checkpoint(args.load_ckpt) is not None:
                 tf.logging.info('Loading Checkpoint from '+ tf.train.latest_checkpoint(args.load_ckpt))
                 saver.restore(sess, tf.train.latest_checkpoint(args.load_ckpt))

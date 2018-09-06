@@ -32,80 +32,80 @@ def variable_summaries(var):
         tf.summary.histogram('histogram', var)
 
 
-def up_projection(lt_, nf, s):
-
-    if s == 2:
-        ht = Conv2DTranspose(nf, 2, strides=2)(lt_)
-        ht = PReLU()(ht)
-        lt = ZeroPadding2D(2)(ht)
-        lt = Conv2D(nf, 6, 2)(lt)
-        lt = PReLU()(lt)
-        et = Subtract()([lt, lt_])
-        ht1 = Conv2DTranspose(nf, 2, strides=2)(et)
-        ht1 = PReLU()(ht1)
-        ht1 = Add()([ht, ht1])
+def up_projection(lt_, nf, s, block):
+    with tf.name_scope('up_' + str(block)):
+        if s == 2:
+            ht = Conv2DTranspose(nf, 2, strides=2)(lt_)
+            ht = PReLU()(ht)
+            lt = ZeroPadding2D(2)(ht)
+            lt = Conv2D(nf, 6, 2)(lt)
+            lt = PReLU()(lt)
+            et = Subtract()([lt, lt_])
+            ht1 = Conv2DTranspose(nf, 2, strides=2)(et)
+            ht1 = PReLU()(ht1)
+            ht1 = Add()([ht, ht1])
+            return (ht1)
+        if s == 4:
+            ht = Conv2DTranspose(nf, 4, strides=4)(lt_)
+            ht = PReLU()(ht)
+            lt = ZeroPadding2D(2)(ht)
+            lt = Conv2D(nf, 8, strides=4)(lt)
+            lt = PReLU()(lt)
+            et = Subtract()([lt, lt_])
+            ht1 = Conv2DTranspose(nf, 4, strides=4)(et)
+            ht1 = PReLU()(ht1)
+            ht1 = Add()([ht, ht1])
+            return (ht1)
+        if s == 8:
+            ht = Conv2DTranspose(nf, 8, strides=8)(lt_)
+            ht = PReLU()(ht)
+            lt = ZeroPadding2D(2)(ht)
+            lt = Conv2D(nf, 12, strides=8)(lt)
+            lt = PReLU()(lt)
+            et = Subtract()([lt, lt_])
+            ht1 = Conv2DTranspose(nf, 8, strides=8)(et)
+            ht1 = PReLU()(ht1)
+            ht1 = Add()([ht, ht1])
         return (ht1)
-    if s == 4:
-        ht = Conv2DTranspose(nf, 4, strides=4)(lt_)
-        ht = PReLU()(ht)
-        lt = ZeroPadding2D(2)(ht)
-        lt = Conv2D(nf, 8, strides=4)(lt)
-        lt = PReLU()(lt)
-        et = Subtract()([lt, lt_])
-        ht1 = Conv2DTranspose(nf, 4, strides=4)(et)
-        ht1 = PReLU()(ht1)
-        ht1 = Add()([ht, ht1])
-        return (ht1)
-    if s == 8:
-        ht = Conv2DTranspose(nf, 8, strides=8)(lt_)
-        ht = PReLU()(ht)
-        lt = ZeroPadding2D(2)(ht)
-        lt = Conv2D(nf, 12, strides=8)(lt)
-        lt = PReLU()(lt)
-        et = Subtract()([lt, lt_])
-        ht1 = Conv2DTranspose(nf, 8, strides=8)(et)
-        ht1 = PReLU()(ht1)
-        ht1 = Add()([ht, ht1])
-        return (ht1)
 
 
-def down_projection(ht_, nf, s, act='prelu'):
-
-    if s == 2:
-        ht = ZeroPadding2D(2)(ht_)
-        lt = Conv2D(nf, 6, strides=2)(ht)
-        lt = PReLU()(lt)
-        ht = Conv2DTranspose(nf, 2, strides=2)(lt)
-        ht = PReLU()(ht)
-        et = Subtract()([ht, ht_])
-        lt1 = ZeroPadding2D(2)(et)
-        lt1 = Conv2D(nf, 6, strides=2)(lt1)
-        lt1 = PReLU()(lt1)
-        lt1 = Add()([lt1, lt])
-        return lt1
-    if s == 4:
-        ht = ZeroPadding2D(2)(ht_)
-        lt = Conv2D(nf, 8, strides=4)(ht)
-        lt = PReLU()(lt)
-        ht = Conv2DTranspose(nf, 4, strides=4)(lt)
-        ht = PReLU()(ht)
-        et = Subtract()([ht, ht_])
-        lt1 = ZeroPadding2D(2)(et)
-        lt1 = Conv2D(nf, 8, strides=4)(lt1)
-        lt1 = PReLU()(lt1)
-        lt1 = Add()([lt1, lt])
-        return lt1
-    if s == 8:
-        ht = ZeroPadding2D(2)(ht_)
-        lt = Conv2D(nf, 12, strides=8)(ht)
-        lt = PReLU()(lt)
-        ht = Conv2DTranspose(nf, 8, strides=8)(lt)
-        ht = PReLU()(ht)
-        et = Subtract()([ht, ht_])
-        lt1 = ZeroPadding2D(2)(et)
-        lt1 = Conv2D(nf, 12, strides=8)(lt1)
-        lt1 = PReLU()(lt1)
-        lt1 = Add()([lt1, lt])
+def down_projection(ht_, nf, s, block, act='prelu' ):
+    with tf.name_scope('down_'+str(block)):
+        if s == 2:
+            ht = ZeroPadding2D(2)(ht_)
+            lt = Conv2D(nf, 6, strides=2)(ht)
+            lt = PReLU()(lt)
+            ht = Conv2DTranspose(nf, 2, strides=2)(lt)
+            ht = PReLU()(ht)
+            et = Subtract()([ht, ht_])
+            lt1 = ZeroPadding2D(2)(et)
+            lt1 = Conv2D(nf, 6, strides=2)(lt1)
+            lt1 = PReLU()(lt1)
+            lt1 = Add()([lt1, lt])
+            return lt1
+        if s == 4:
+            ht = ZeroPadding2D(2)(ht_)
+            lt = Conv2D(nf, 8, strides=4)(ht)
+            lt = PReLU()(lt)
+            ht = Conv2DTranspose(nf, 4, strides=4)(lt)
+            ht = PReLU()(ht)
+            et = Subtract()([ht, ht_])
+            lt1 = ZeroPadding2D(2)(et)
+            lt1 = Conv2D(nf, 8, strides=4)(lt1)
+            lt1 = PReLU()(lt1)
+            lt1 = Add()([lt1, lt])
+            return lt1
+        if s == 8:
+            ht = ZeroPadding2D(2)(ht_)
+            lt = Conv2D(nf, 12, strides=8)(ht)
+            lt = PReLU()(lt)
+            ht = Conv2DTranspose(nf, 8, strides=8)(lt)
+            ht = PReLU()(ht)
+            et = Subtract()([ht, ht_])
+            lt1 = ZeroPadding2D(2)(et)
+            lt1 = Conv2D(nf, 12, strides=8)(lt1)
+            lt1 = PReLU()(lt1)
+            lt1 = Add()([lt1, lt])
         return lt1
 
 
@@ -124,6 +124,8 @@ def super_resolution(input_tensor, n_feature_layers=2, n_projection=1,
     -------
     A Model object of the super resolution network  
     '''
+    if not K_B.is_keras_tensor(input_tensor):
+        input_tensor = Input(shape=input_tensor.get_shape()[1:], tensor=input_tensor)
     x = Conv2D(feature_filters[0], k_size[0], padding="SAME")(input_tensor)
     if (len(k_size) != len(feature_filters)):
         raise ValueError(
@@ -131,9 +133,10 @@ def super_resolution(input_tensor, n_feature_layers=2, n_projection=1,
     for i in range(len(k_size)-1):
         x = Conv2D(feature_filters[i+1], k_size[i+1], padding="same")(x)
     for i in range(n_projection):
-        x = up_projection(x, projection_filters, s)
-        x = down_projection(x, projection_filters, s)
-    x = up_projection(x, projection_filters, s)
+        x = up_projection(x, projection_filters, s, i+1)
+        x = down_projection(x, projection_filters, s, i+1)
+    x = up_projection(x, projection_filters, s, n_projection+1)
+    x = Conv2D(3, 3, padding='same')(x)
     return Model(inputs=input_tensor, outputs=x) 
 
 def loss_funcs(b,labels):
