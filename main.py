@@ -37,7 +37,7 @@ parser.add_argument("--summary_freq",type = int,default=100,help="summary writer
 parser.add_argument("--no_epochs",type=int,default=10,help="number of epochs for training")
 
 args = parser.parse_args()
-no_iter_per_epoch = np.ceil(300/args.batch_size)
+no_iter_per_epoch = np.ceil(30000/args.batch_size)
 
 runopts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
 coloredlogs.install(level='DEBUG')
@@ -47,17 +47,18 @@ init = tf.global_variables_initializer()
 
 n, ini = read_no_labels(args.train_dir, s=8, patch=16, batch_size=args.batch_size)
 
-sample = super_resolution(n[1], s=8)
+sample = super_resolution(n[1], s=8, n_projection=4)
 
 loss = loss_funcs(sample, n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
-
+init_learning_rate = tf.constant(1e-4)
+learning_rate = tf.train.exponential_decay(init_learning_rate,global_step_tensor,decay_rate=0.1,decay_steps=5e5,staircase=True)
 tf.summary.image('High-Res-True', n[0])
 tf.summary.image('High-Res-Pred', sample.output)
 tf.summary.image('Low-Res', n[1])
 
-optimizer = tf.train.AdamOptimizer()
+optimizer = tf.train.AdamOptimizer(learning_rate,epsilon=1e-4)
 opA = optimizer.minimize(loss,global_step=global_step_tensor)
 
 with K_B.get_session() as sess:
