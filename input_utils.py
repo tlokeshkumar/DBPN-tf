@@ -80,6 +80,18 @@ def _crop_random_single(image, s, patch):
     """Randomly crops image and mask in accord."""
     seed = random.random()
     img_rows, img_cols = (patch*s, patch*s)
+    image_shape = tf.shape(image)
+    image_rows = image_shape[0]
+    image_cols = image_shape[1]
+    print ("he")
+    print (image)
+    print ("he")
+    with tf.device('cpu:0'):
+        # If the HR image is smaller than the (patch*s, patch*s) then padding is done. If the input image is
+        # larger than the  (patch*s, patch*s) ReLu cuts it off.
+        t = tf.nn.relu(tf.convert_to_tensor([[(img_rows-image_rows)//2+1,(img_rows-image_rows)//2+1],[(img_cols-image_cols)//2+1,(img_cols-image_cols)//2+1],[0,0]]))
+        image = tf.pad(image,t)
+    # tf.cond(image_rows < tf.convert_to_tensor(img_rows) or image_cols < tf.convert_to_tensor(img_cols),
     # cond_crop_image = tf.cast(tf.random_uniform(
     #     [], maxval=2, dtype=tf.int32, seed=seed), tf.bool)
     
@@ -389,11 +401,11 @@ if __name__ == '__main__':
     print ("passed the functions successfully!")
 
     for i in range(5):
-        a = sess.run(n[1])
+        a, b = sess.run(n)
         # print (b)
         print (np.squeeze(a, axis=0).shape)
         print (np.squeeze(b, axis=0).shape)
-        cv2.imshow("image", np.squeeze(a, axis=0))
+        cv2.imshow("image", np.squeeze(a.astype('uint8'), axis=0))
         cv2.imshow("downsampled", np.squeeze(b.astype('uint8'), axis=0))
         cv2.waitKey()
         cv2.destroyAllWindows()
