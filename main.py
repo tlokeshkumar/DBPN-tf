@@ -49,12 +49,13 @@ init = tf.global_variables_initializer()
 n, ini = read_no_labels(args.train_dir, s=8, patch=32, batch_size=args.batch_size)
 
 sample = super_resolution(n[1], s=8, n_projection=8)
+print (sample.summary())
 
 if args.loss == "mse":
     loss = loss_funcs(sample, n[0])
 
 elif args.loss == "perpetual":
-    loss = perpetual_loss(sample,n[0])
+    loss = 0.3*perpetual_loss(sample,n[0]) + 0.7*loss_funcs(sample,n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
 init_learning_rate = tf.constant(1e-4)

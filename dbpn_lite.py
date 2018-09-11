@@ -191,27 +191,31 @@ def perpetual_loss(b,labels):
     Compute the Perpetual Loss Function based on a VGGNet Trained on ImageNet
     '''
     out = b.output
-    input_tensor = tf.concat(-1,[out,labels])
+    print(out)
+    print(labels)
+    input_tensor = tf.concat([out,labels],axis=0)
     perpetual_model = applications.VGG16(input_tensor=input_tensor, weights='imagenet', include_top=False, input_shape=(256, 256, 3))
-    BOTTLENECK_TENSOR_NAME = 'block4_conv3' 
+    BOTTLENECK_TENSOR_NAME = 'block3_conv3' 
     f = create_non_trainable_model(perpetual_model, BOTTLENECK_TENSOR_NAME)
     vgg_out = f.output
-    
-    _,H,W,C = vgg_out.get_shape()
-    feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:,:,:,:C//2],vgg_out[:,:,:,C//2:])
-    
+    shape_vgg = tf.shape(vgg_out)
+    B = shape_vgg[0]
+    H = shape_vgg[1]
+    W = shape_vgg[2]
+    C = shape_vgg[3]
+    feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:B//2,:,:,:],vgg_out[B//2:,:,:,:])
     psi_y_pred = tf.reshape(vgg_out[:,:,:,:C//2],[-1,C,H*W])
     gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))
     psi_y_tar = tf.reshape(vgg_out[:,:,:,C//2:],[-1,C,H*W])
     gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))
     
-    style_transfer_loss = tf.norm(gram_y_pred-gram_y_tar,'fro')
+    # style_transfer_loss = tf.norm(gram_y_pred-gram_y_tar,'fro')  #frobenius norm of gram matrices
 
     with tf.name_scope('feat_recons_loss'):
         variable_summaries(feat_recons_loss)
     
-    with tf.name_scope('Style_transfer_loss'):
-        variable_summaries(style_transfer_loss)
+    # with tf.name_scope('Style_transfer_loss'):
+        # variable_summaries(style_transfer_loss)
     
     with tf.name_scope('Predictions'):
         variable_summaries(out)
