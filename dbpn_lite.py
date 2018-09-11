@@ -17,6 +17,41 @@ from tensorflow.python.keras import applications
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K_B
 
+def create_non_trainable_model(base_model, BOTTLENECK_TENSOR_NAME, use_global_average = False):
+    '''
+    Parameters
+    ----------
+    base_model: This is the pre-trained base model with which the non-trainable model is built
+
+    Note: The term non-trainable can be confusing. The non-trainable-parametes are present only in this
+    model. The other model (trianable model doesnt have any non-trainable parameters). But if you chose to 
+    omit the bottlenecks due to any reason, you will be training this network only. (If you choose
+    --omit_bottleneck flag). So please adjust the place in this function where I have intentionally made 
+    certain layers non-trainable.
+
+    Returns
+    -------
+    non_trainable_model: This is the model object which is the modified version of the base_model that has
+    been invoked in the beginning. This can have trainable or non trainable parameters. If bottlenecks are
+    created, then this network is completely non trainable, (i.e) this network's output is the bottleneck
+    and the network created in the trainable is used for training with bottlenecks as input. If bottlenecks
+    arent created, then this network is trained. So please use accordingly.
+    '''
+    # This post-processing of the deep neural network is to avoid memory errors
+    x = (base_model.get_layer(BOTTLENECK_TENSOR_NAME))
+    all_layers = base_model.layers
+    for i in range(base_model.layers.index(x)):
+        all_layers[i].trainable = False
+    mid_out = base_model.layers[base_model.layers.index(x)]
+    variable_summaries(mid_out.output)
+    non_trainable_model = Model(base_model.input, mid_out.output)
+    #non_trainable_model = Model(inputs = base_model.input, outputs = [x])
+    
+    # for layer in non_trainable_model.layers:
+    #     layer.trainable = False
+    
+    return (non_trainable_model)
+
 def variable_summaries(var):
     """
     Attach a lot of summaries to a Tensor (for TensorBoard visualization).
@@ -150,6 +185,38 @@ def loss_funcs(b,labels):
         variable_summaries(out)
     
     return mse
+
+def perpetual_loss(b,labels):
+    '''
+    Compute the Perpetual Loss Function based on a VGGNet Trained on ImageNet
+    '''
+    out = b.output
+    input_tensor = tf.concat(-1,[out,labels])
+    perpetual_model = applications.VGG16(input_tensor=input_tensor, weights='imagenet', include_top=False, input_shape=(256, 256, 3))
+    BOTTLENECK_TENSOR_NAME = 'block4_conv3' 
+    f = create_non_trainable_model(perpetual_model, BOTTLENECK_TENSOR_NAME)
+    vgg_out = f.output
+    
+    _,H,W,C = vgg_out.get_shape()
+    feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:,:,:,:C//2],vgg_out[:,:,:,C//2:])
+    
+    psi_y_pred = tf.reshape(vgg_out[:,:,:,:C//2],[-1,C,H*W])
+    gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))
+    psi_y_tar = tf.reshape(vgg_out[:,:,:,C//2:],[-1,C,H*W])
+    gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))
+    
+    style_transfer_loss = tf.losses.mean_squared_error(gram_y_pred,gram_y_tar)
+
+    with tf.name_scope('feat_recons_loss'):
+        variable_summaries(feat_recons_loss)
+    
+    with tf.name_scope('Style_transfer_loss'):
+        variable_summaries(style_transfer_loss)
+    
+    with tf.name_scpoe('Predictions'):
+        variable_summaries(out)
+
+    return(feat_recons_loss,style_transfer_loss)
 
 if __name__ == '__main__':
     x = Input(shape=(256, 256, 3))

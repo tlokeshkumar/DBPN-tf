@@ -45,9 +45,9 @@ tf.logging.set_verbosity(tf.logging.DEBUG)
 
 init = tf.global_variables_initializer()
 
-n, ini = read_no_labels(args.train_dir, s=8, patch=16, batch_size=args.batch_size)
+n, ini = read_no_labels(args.train_dir, s=8, patch=32, batch_size=args.batch_size)
 
-sample = super_resolution(n[1], s=8, n_projection=4)
+sample = super_resolution(n[1], s=8, n_projection=8)
 
 loss = loss_funcs(sample, n[0])
 
