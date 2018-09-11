@@ -17,7 +17,7 @@ from tensorflow.python.keras import applications
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K_B
 from input_utils import read_no_labels
-from dbpn_lite import super_resolution, loss_funcs
+from dbpn_lite import super_resolution, loss_funcs , perpetual_loss
 import argparse
 import numpy as np
 import coloredlogs
@@ -35,6 +35,7 @@ parser.add_argument("--save_freq",type = int,default=100,help="save frequency")
 parser.add_argument("--display_step",type = int,default=1,help="display frequency")
 parser.add_argument("--summary_freq",type = int,default=100,help="summary writer frequency")
 parser.add_argument("--no_epochs",type=int,default=10,help="number of epochs for training")
+parser.add_argument("--loss",type=str,default="perpetual",help="loss function you want to train with mse or perpetual")
 
 args = parser.parse_args()
 no_iter_per_epoch = np.ceil(30000/args.batch_size)
@@ -49,7 +50,11 @@ n, ini = read_no_labels(args.train_dir, s=8, patch=32, batch_size=args.batch_siz
 
 sample = super_resolution(n[1], s=8, n_projection=8)
 
-loss = loss_funcs(sample, n[0])
+if args.loss == "mse":
+    loss = loss_funcs(sample, n[0])
+
+elif args.loss == "perpetual":
+    loss = perpetual_loss(sample,n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
 init_learning_rate = tf.constant(1e-4)
@@ -58,8 +63,11 @@ tf.summary.image('High-Res-True', n[0])
 tf.summary.image('High-Res-Pred', sample.output)
 tf.summary.image('Low-Res', n[1])
 
+vars_encoder = [var for var in tf.trainable_variables() if var.name.startswith("up") or var.name.startswith("down")]
+for i in vars_encoder:
+    tf.logging.info("Training only variables in: " + str(i))    
 optimizer = tf.train.AdamOptimizer(learning_rate,epsilon=1e-4)
-opA = optimizer.minimize(loss,global_step=global_step_tensor)
+opA = optimizer.minimize(loss,global_step=global_step_tensor,var_list=vars_encoder)
 
 with K_B.get_session() as sess:
         
