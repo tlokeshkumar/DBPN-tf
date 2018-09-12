@@ -205,9 +205,9 @@ def perpetual_loss(b,labels):
     C = shape_vgg[3]
     feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:B//2,:,:,:],vgg_out[B//2:,:,:,:])
     psi_y_pred = tf.reshape(vgg_out[:B//2,:,:,:],[-1,C,H*W])
-    gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))
+    gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))/(H*W*C)
     psi_y_tar = tf.reshape(vgg_out[B//2:,:,:,:],[-1,C,H*W])
-    gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))
+    gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))/(H*W*C)
     
     style_transfer_loss = tf.reduce_mean(tf.norm(gram_y_pred-gram_y_tar,'fro',axis=(1,2)))  #frobenius norm of gram matrices
 
