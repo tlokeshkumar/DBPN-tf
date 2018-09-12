@@ -176,7 +176,7 @@ def super_resolution(input_tensor, n_feature_layers=2, n_projection=1,
 
 def loss_funcs(b,labels):
     out = b.output
-    mse = tf.losses.mean_squared_error(out,labels)
+    mse = tf.losses.mean_squared_error(out,labels,reduction=tf.losses.Reduction.MEAN)
     
     with tf.name_scope('loss'):
         variable_summaries(mse)
@@ -203,11 +203,11 @@ def perpetual_loss(b,labels):
     H = shape_vgg[1]
     W = shape_vgg[2]
     C = shape_vgg[3]
-    feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:B//2,:,:,:],vgg_out[B//2:,:,:,:])
+    feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:B//2,:,:,:],vgg_out[B//2:,:,:,:],reduction=tf.losses.Reduction.MEAN)
     psi_y_pred = tf.reshape(vgg_out[:B//2,:,:,:],[-1,C,H*W])
-    gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))/(H*W*C)
+    gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))/tf.cast(H*W*C,tf.float32)
     psi_y_tar = tf.reshape(vgg_out[B//2:,:,:,:],[-1,C,H*W])
-    gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))/(H*W*C)
+    gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))/tf.cast(H*W*C,tf.float32)
     
     style_transfer_loss = tf.reduce_mean(tf.norm(gram_y_pred-gram_y_tar,'fro',axis=(1,2)))  #frobenius norm of gram matrices
 

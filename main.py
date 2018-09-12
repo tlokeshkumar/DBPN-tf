@@ -61,6 +61,7 @@ elif args.loss == "perpetual":
 global_step_tensor = tf.train.get_or_create_global_step()
 init_learning_rate = tf.constant(1e-4)
 learning_rate = tf.train.exponential_decay(init_learning_rate,global_step_tensor,decay_rate=0.1,decay_steps=5e5,staircase=True)
+tf.summary.scalar('Learning Rate',learning_rate)
 tf.summary.image('High-Res-True', n[0])
 tf.summary.image('High-Res-Pred', sample.output)
 tf.summary.image('Low-Res', n[1])
