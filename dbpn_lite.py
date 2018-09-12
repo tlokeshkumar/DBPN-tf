@@ -204,23 +204,23 @@ def perpetual_loss(b,labels):
     W = shape_vgg[2]
     C = shape_vgg[3]
     feat_recons_loss = tf.losses.mean_squared_error(vgg_out[:B//2,:,:,:],vgg_out[B//2:,:,:,:])
-    psi_y_pred = tf.reshape(vgg_out[:,:,:,:C//2],[-1,C,H*W])
+    psi_y_pred = tf.reshape(vgg_out[:B//2,:,:,:],[-1,C,H*W])
     gram_y_pred = tf.matmul(psi_y_pred,tf.transpose(psi_y_pred,[0,2,1]))
-    psi_y_tar = tf.reshape(vgg_out[:,:,:,C//2:],[-1,C,H*W])
+    psi_y_tar = tf.reshape(vgg_out[B//2:,:,:,:],[-1,C,H*W])
     gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))
     
-    # style_transfer_loss = tf.norm(gram_y_pred-gram_y_tar,'fro')  #frobenius norm of gram matrices
+    style_transfer_loss = tf.norm(gram_y_pred-gram_y_tar,'fro')  #frobenius norm of gram matrices
 
     with tf.name_scope('feat_recons_loss'):
         variable_summaries(feat_recons_loss)
     
-    # with tf.name_scope('Style_transfer_loss'):
-        # variable_summaries(style_transfer_loss)
+    with tf.name_scope('Style_transfer_loss'):
+        variable_summaries(style_transfer_loss)
     
     with tf.name_scope('Predictions'):
         variable_summaries(out)
 
-    return(feat_recons_loss)
+    return(feat_recons_loss,style_transfer_loss)
 
 if __name__ == '__main__':
     x = Input(shape=(256, 256, 3))
