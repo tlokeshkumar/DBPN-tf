@@ -55,7 +55,8 @@ if args.loss == "mse":
     loss = loss_funcs(sample, n[0])
 
 elif args.loss == "perpetual":
-    loss = 0.3*perpetual_loss(sample,n[0]) + 0.7*loss_funcs(sample,n[0])
+    perp_losses = perpetual_loss(sample,n[0])
+    loss = 0.15*perp_losses[0] + 0.15*perp_losses[1] + 0.7*loss_funcs(sample,n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
 init_learning_rate = tf.constant(1e-4)
