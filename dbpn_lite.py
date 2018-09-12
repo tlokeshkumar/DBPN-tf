@@ -209,7 +209,7 @@ def perpetual_loss(b,labels):
     psi_y_tar = tf.reshape(vgg_out[B//2:,:,:,:],[-1,C,H*W])
     gram_y_tar = tf.matmul(psi_y_tar,tf.transpose(psi_y_tar,[0,2,1]))
     
-    style_transfer_loss = tf.norm(gram_y_pred-gram_y_tar,'fro')  #frobenius norm of gram matrices
+    style_transfer_loss = tf.reduce_mean(tf.norm(gram_y_pred-gram_y_tar,'fro'))  #frobenius norm of gram matrices
 
     with tf.name_scope('feat_recons_loss'):
         variable_summaries(feat_recons_loss)
@@ -217,9 +217,6 @@ def perpetual_loss(b,labels):
     with tf.name_scope('Style_transfer_loss'):
         variable_summaries(style_transfer_loss)
     
-    with tf.name_scope('Predictions'):
-        variable_summaries(out)
-
     return(feat_recons_loss,style_transfer_loss)
 
 if __name__ == '__main__':
