@@ -5,7 +5,7 @@
 <font size="5">Lokesh Kumar T EE16B040
 ---
 @title[Architecture]
-
+@snap[north]
 ### Architecture
 
 ---
