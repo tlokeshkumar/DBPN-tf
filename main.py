@@ -56,11 +56,11 @@ if args.loss == "mse":
 
 elif args.loss == "perpetual":
     perp_losses = perpetual_loss(sample,n[0])
-    loss = 0.15*perp_losses[0] + 0.15*perp_losses[1] + 0.7*loss_funcs(sample,n[0])
+    loss = 0.1*perp_losses[0] + 0.000001*perp_losses[1] + 1.0*loss_funcs(sample,n[0])
 
 global_step_tensor = tf.train.get_or_create_global_step()
 init_learning_rate = tf.constant(1e-4)
-learning_rate = tf.train.exponential_decay(init_learning_rate,global_step_tensor,decay_rate=0.1,decay_steps=5e5,staircase=True)
+learning_rate = tf.train.exponential_decay(init_learning_rate,global_step_tensor,decay_rate=0.001,decay_steps=1e4,staircase=True)
 tf.summary.scalar('Learning Rate',learning_rate)
 tf.summary.image('High-Res-True', n[0])
 tf.summary.image('High-Res-Pred', sample.output)

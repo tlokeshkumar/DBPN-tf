@@ -195,7 +195,7 @@ def perpetual_loss(b,labels):
     print(labels)
     input_tensor = tf.concat([out,labels],axis=0)
     perpetual_model = applications.VGG16(input_tensor=input_tensor, weights='imagenet', include_top=False, input_shape=(256, 256, 3))
-    BOTTLENECK_TENSOR_NAME = 'block3_conv3' 
+    BOTTLENECK_TENSOR_NAME = 'block4_conv3' 
     f = create_non_trainable_model(perpetual_model, BOTTLENECK_TENSOR_NAME)
     vgg_out = f.output
     shape_vgg = tf.shape(vgg_out)
@@ -220,6 +220,6 @@ def perpetual_loss(b,labels):
     return(feat_recons_loss,style_transfer_loss)
 
 if __name__ == '__main__':
-    x = Input(shape=(256, 256, 3))
+    x = Input(shape=(512, 512, 3))
     sample = super_resolution(x)
     print (sample.summary())
