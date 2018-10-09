@@ -7,7 +7,7 @@
 @title[Motivation]
 @snap[north]
 
-<h2>Main Motivation</h2>
+<h3>Main Motivation</h3>
 
 @snapend
 ---
