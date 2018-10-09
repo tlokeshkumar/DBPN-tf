@@ -7,7 +7,7 @@
 @title[Motivation]
 @snap[north]
 
-## Main Motivation
+Main Motivation
 
 @snapend
 ---
