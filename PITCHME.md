@@ -6,37 +6,39 @@
 ---
 @title[Motivation]
 @snap[north]
-### Main Motivation
+## Main Motivation
 @snapend
 ---
 @title[Architecture1]
+
 @snap[north]
-### Architecture
+## Architecture
 @snapend
+
 +++
 @title[Architecture2]
 @snap[north]
-### Architecture
+## Architecture
 @snapend
 ---
 @title[Ideas1]
 @snap[north]
-### Main Ideas
+## Main Ideas
 @snapend
 +++
 @title[Ideas2]
 @snap[north]
-### Main Ideas
+## Main Ideas
 @snapend
 ---
 @title[Explain]
 @snap[north]
-### Why does it work?
+## Why does it work?
 @snapend
 ---
 @title[Main Results]
 @snap[north]
-### Results
+## Results
 @snapend
 ---
 @title[OurAdditions]
@@ -47,12 +49,13 @@
 +++
 @title[Code]
 @snap[north]
-## Code 
+## Our Addition
+### Code 
 @snapend
 +++
 @title[Results]
 @snap[north]
-### Our Results
+## Our Results
 @snapend
 ---
 @title[final]
