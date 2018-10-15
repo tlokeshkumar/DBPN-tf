@@ -29,7 +29,10 @@ Unofficial Tensorflow implementation of DBPN CVPR 2018.
 
 |Code|Utilities|Run Command|
 ---|---|---
-dbpn_lite.py| Implementation of DBPN with no dense connections. It has implementations of various scales **2x, 4x, 8x**. | `python dbpn_lite.py`
+dbpn_lite.py| Implementation of DBPN with no dense connections. It has implementations of various scales **2x, 4x, 8x**. It contains utility functions and model definitions.|
+main.py | Main training program | `python main.py --no_epoch 10000 --batch_size 8 --train_dir <path to train dataset>`
+
+Training dataset for DBPN is only a **folder full of HR images**. LR down conversion is taken care by the [**input pipeline**](https://github.com/tlokeshkumar/tf-data-input-pipeline).  
 
 #### Up Projection Block
 ![up](images/graphs/up.png)
