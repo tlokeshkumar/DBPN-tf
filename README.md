@@ -40,7 +40,8 @@ Training dataset for DBPN is only a **folder full of HR images**. LR down conver
 #### Down Projection Block
 ![down](images/graphs/down.png)
 
-## Sample Outputs (8x) [Trained for limited number of iterations. Further improvements wrt to training can be done]
+## Sample Outputs (8x) 
+> [Trained for limited number of iterations. Further improvements wrt to training can be done]
 
 |Input LR| Predicted HR| True HR|
 -|-|-|
