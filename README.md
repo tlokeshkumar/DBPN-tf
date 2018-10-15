@@ -16,21 +16,13 @@ Unofficial Tensorflow implementation of DBPN CVPR 2018.
 - We have used only **Feature Reconstruction Loss** of perceptual loss for training purposes. **Style Transfer Loss** is implemented though.
 - Total Loss function
 
-$
-\mathcal{L}_{total} = \mathcal{L}_{Image\ Reconstruction} + \lambda \mathcal{L}_{Feature\ Reconstruction}
-$
+![](https://latex.codecogs.com/gif.latex?%5Cmathcal%7BL%7D_%7Btotal%7D%20%3D%20%5Cmathcal%7BL%7D_%7BImage%5C%20Reconstruction%7D%20&plus;%20%5Clambda%20%5Cmathcal%7BL%7D_%7BFeature%5C%20Reconstruction%7D)
 
-$
-\mathcal{L}_{total} = \sum_i|| f(x_i) - y_i ||_2^2 + \lambda \sum_i\sum_j||g_j(f(x_i)) - g_j(y_i)||_2^2
-$
 
-$
-f: Non\ Linear\ Mapping\ (DBPN)
-$
+![](https://latex.codecogs.com/gif.latex?%5Cmathcal%7BL%7D_%7Btotal%7D%20%3D%20%5Csum_i%7C%7C%20f%28x_i%29%20-%20y_i%20%7C%7C_2%5E2%20&plus;%20%5Clambda%20%5Csum_i%5Csum_j%7C%7Cg_j%28f%28x_i%29%29%20-%20g_j%28y_i%29%7C%7C_2%5E2)
 
-$
-g_j: Pre-trained\ Network\ layer\ j
-$
+    f: Non Linear Mapping (DBPN)
+    g_j: Pre-trained Network layer j
 
 
 ## How to use this?
