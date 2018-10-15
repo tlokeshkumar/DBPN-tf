@@ -3,7 +3,7 @@
 Unofficial Tensorflow implementation of DBPN CVPR 2018.
 
 ## Whats DBPN?
-
+> **Paper presentation is [here](https://gitpitch.com/tlokeshkumar/DBPN-tf#/).**
 - One of the Deep Super-resolution networks that learn **representations** of low-res inputs, and the **non linear mapping** to high-res output.
 - This network exploits iterative up and down convolution layers thereby providing a negative feedback mechanism for projection errors at each stage.
 - Stacking of each up and down sampling stage in this fasion is **DBPN**.
